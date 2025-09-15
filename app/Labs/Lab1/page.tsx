@@ -54,11 +54,11 @@ export default function Lab1() {
                     <ul id="wd-my-books">
                     <li>Dune</li>
                     <li>Lord of the Rings</li>
-                    <li>Ender's Game</li>
+                    <li>Enders Game</li>
                     <li>Red Mars</li>
                     <li>The Forever War</li>
                     </ul>
-                Fausta's favorite books (in no particular order)
+                Faustas favorite books (in no particular order)
                     <ul id="wd-your-books">
                     <li>The Hunger Games</li>
                     <li>The Maze Runner</li>
@@ -159,7 +159,7 @@ export default function Lab1() {
             <br />
             Loading a local image:
             <br />
-            <Image id="wd-teslabot" alt="Description of image" src="/images/teslabot.jpg" height="200px" /></div>
+            <Image id="wd-teslabot" alt="Description of image" src="/images/teslabot.jpg" height={200} /></div>
 
         <div id="wd-forms">
         <h4>Form Elements</h4>
