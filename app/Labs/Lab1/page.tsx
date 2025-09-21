@@ -4,7 +4,7 @@ import Image from "next/image"
 export default function Lab1() {
   return (
     <div id="wd-lab1">
-      <h2>Lab 1</h2>
+      <h2>Lab 1 - Fausta Fenner - Sec 04</h2>
       <h3>HTML Examples</h3>
         <div id="wd-h-tag">
             <h4>Heading Tags</h4>
@@ -151,21 +151,19 @@ export default function Lab1() {
       <div id="wd-images">
         <h4>Image tag</h4>
             Loading an image from the internet: <br />
-            <Image 
-                id="wd-starship" 
-                alt="Description of image" 
-                width={400}   
-                src="https://www.staradvertiser.com/wp-content/uploads/2021/08/web1_Starship-gap2.jpg" />
-            <br />
+            
+            <img id="wd-starship" width="400px" src="https://www.staradvertiser.com/wp-content/uploads/2021/08/web1_Starship-gap2.jpg" />
+           <br />
+
             Loading a local image:
             <br />
-            <Image id="wd-teslabot" alt="Description of image" src="/images/teslabot.jpg" height={200} /></div>
+            <Image id="wd-teslabot" alt="Description of image" src="/images/teslabot.jpg" width={400} height={400} /></div>
 
         <div id="wd-forms">
         <h4>Form Elements</h4>
         <form id="wd-text-fields">
             <h5>Text Fields</h5>
-            <label htmlFor="wd-text-fields-username">Username:</label>
+            <label htmlFor="wd-text-finelds-username">Username:</label>
             <input placeholder="jdoe" id="wd-text-fields-username" /> <br />
             <label htmlFor="wd-text-fields-password">Password:</label>
             <input type="password" defaultValue="123@#$asd" id="wd-text-fields-password" />
@@ -175,6 +173,7 @@ export default function Lab1() {
             <label htmlFor="wd-text-fields-last-name">Last name:</label>
             <input type="text" placeholder="Doe"
                 defaultValue="Wonderland"
+                
                 title="The last name"
                 id="wd-text-fields-last-name" />
             
@@ -276,12 +275,12 @@ export default function Lab1() {
 
         <h4>Anchor tag</h4>
         Please
-        <a href="https://www.lipsum.com" id="wd-lipsum">click here</a>
+        <a href="https://www.lipsum.com" id="wd-lipsum"> click here </a>
         to get dummy text<br/> 
 
         Please
-        <a href="https://github.com/faustafenner?tab=repositories" id="wd-github">click here</a>
-        to view Hithub repo<br/> 
+        <a href="https://github.com/faustafenner/kambaz-next-js" id="wd-github"> click here </a>
+        to view Github repo<br/> 
 
     <footer style={{ height: "100px" }}></footer>
     </div>
