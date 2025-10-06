@@ -1,6 +1,6 @@
 import React from "react";
 
-const GridLayout = () => {
+export default function GridLayout() {
   return (
     <div id="wd-css-grid-layout">
       <div id="wd-css-left-right-layout">
@@ -47,4 +47,4 @@ const GridLayout = () => {
   );
 };
 
-export default GridLayout;
+

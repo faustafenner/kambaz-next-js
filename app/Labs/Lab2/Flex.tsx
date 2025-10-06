@@ -1,6 +1,6 @@
 import React from "react";
 
-const Flex = () => {
+export default function Flex() {
   return (
     <div>
       <div id="wd-css-flex">
@@ -33,4 +33,4 @@ const Flex = () => {
   );
 };
 
-export default Flex;
+

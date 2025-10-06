@@ -1,6 +1,6 @@
 import React from "react";
 
-const Corners = () => {
+export default function Corners() {
   return (
     <div id="wd-css-borders">
       <h3>Rounded corners</h3>
@@ -32,4 +32,3 @@ const Corners = () => {
   );
 };
 
-export default Corners;

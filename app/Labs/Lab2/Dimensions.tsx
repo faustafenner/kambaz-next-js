@@ -1,6 +1,6 @@
 import React from "react";
 
-const Dimensions = () => {
+export default function Dimensions() {
   return (
     <div id="wd-css-dimensions">
       <h2>Dimension</h2>
@@ -17,4 +17,4 @@ const Dimensions = () => {
     </div>
   );
 };
-export default Dimensions;
+

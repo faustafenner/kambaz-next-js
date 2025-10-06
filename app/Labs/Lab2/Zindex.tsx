@@ -1,6 +1,6 @@
 import React from "react";
 
-const Zindex = () => {
+export default function Zindex() {
   return (
     <div id="wd-z-index">
       <h2>Z index</h2>
@@ -27,6 +27,4 @@ const Zindex = () => {
       <br />
     </div>
   );
-};
-
-export default Zindex;
+}

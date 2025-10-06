@@ -1,6 +1,6 @@
 import React from "react";
 
-const Borders = () => {
+export default function Borders() {
   return (
     <div id="wd-css-borders">
       <h2>Borders</h2>
@@ -20,4 +20,3 @@ const Borders = () => {
   );
 };
 
-export default Borders;

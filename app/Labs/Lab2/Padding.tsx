@@ -1,6 +1,6 @@
 import React from "react";
 
-const Padding = () => {
+export default function Padding() {
   return (
     <div id="wd-css-paddings">
       <h2>Padding</h2>
@@ -26,4 +26,4 @@ const Padding = () => {
   );
 };
 
-export default Padding;
+

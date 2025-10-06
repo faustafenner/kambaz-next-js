@@ -1,6 +1,6 @@
 import React from "react";
 
-const ForegroundColors = () => {
+export default function ForegroundColors() {
   return (
     <div id="wd-css-colors">
       <h2>Colors</h2>
@@ -13,4 +13,4 @@ const ForegroundColors = () => {
   );
 };
 
-export default ForegroundColors;
+

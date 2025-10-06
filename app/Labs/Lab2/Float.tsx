@@ -1,6 +1,6 @@
 import React from "react";
 
-const Float = () => {
+export default function Float() {
   return (
     <div>
       <div id="wd-float-divs">
@@ -57,4 +57,3 @@ const Float = () => {
   );
 };
 
-export default Float;
