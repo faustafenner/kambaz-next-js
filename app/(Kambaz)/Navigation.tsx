@@ -9,6 +9,7 @@ import { BsInboxFill } from "react-icons/bs";
 import { BsClockHistory } from "react-icons/bs";
 import { SiAirplayvideo } from "react-icons/si";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { FaBook } from "react-icons/fa";
 
 import Link from "next/link";
 
@@ -50,6 +51,18 @@ export default function KambazNavigation() {
           <AiOutlineDashboard className="fs-1 text-danger" />
           <br />
           Dashboard
+        </Link>
+      </ListGroupItem>
+
+      <ListGroupItem className="border-0 bg-black text-center">
+        <Link
+          href="/Dashboard"
+          id="wd-dashboard-link"
+          className="text-white text-decoration-none"
+        >
+          <FaBook className="fs-1 text-danger" />
+          <br />
+          Courses
         </Link>
       </ListGroupItem>
 
