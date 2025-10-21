@@ -1,3 +1,6 @@
+"use client";
+import { usePathname } from "next/navigation";
+
 import { AiOutlineDashboard } from "react-icons/ai";
 import { IoCalendarOutline } from "react-icons/io5";
 import { LiaBookSolid, LiaCogSolid } from "react-icons/lia";
@@ -14,6 +17,17 @@ import { FaBook } from "react-icons/fa";
 import Link from "next/link";
 
 export default function KambazNavigation() {
+  const pathname = usePathname();
+  const links = [
+    { label: "Dashboard", path: "/Dashboard", icon: AiOutlineDashboard },
+    { label: "Courses", path: "/Dashboard", icon: LiaBookSolid },
+    { label: "Labs", path: "/Labs", icon: GoBeaker },
+    { label: "Groups", path: "/Groups", icon: SlPeople },
+    { label: "Calendar", path: "/Calendar", icon: IoCalendarOutline },
+    { label: "Inbox", path: "/Inbox", icon: FaInbox },
+    { label: "History", path: "/History", icon: BsClockHistory },
+  ];
+
   return (
     <ListGroup
       className="rounded-0 position-fixed bottom-0 top-0 d-none d-md-block bg-black z-2"
@@ -30,112 +44,174 @@ export default function KambazNavigation() {
         <img src="/images/NEU.png" width="75px" alt="Northeastern University" />
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/Account"
-          id="wd-account-link"
-          className="text-white text-decoration-none"
-        >
-          <FaRegCircleUser className="fs-1 text-white" />
-          <br />
-          Account
-        </Link>
+      <ListGroupItem
+        as={Link}
+        href="/Account"
+        className={`text-center border-0 bg-black
+            ${
+              pathname.includes("Account")
+                ? "bg-white text-danger"
+                : "bg-black text-white"
+            }`}
+      >
+        <FaRegCircleUser
+          className={`fs-1 ${
+            pathname.includes("Account") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        Account
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-white text-center">
-        <Link
-          href="/Dashboard"
-          id="wd-dashboard-link"
-          className="text-danger text-decoration-none"
+      {links.map((link) => (
+        <ListGroupItem
+          key={link.path}
+          as={Link}
+          href={link.path}
+          className={`bg-black text-center border-0
+              ${
+                pathname.includes(link.label)
+                  ? "text-danger bg-white"
+                  : "text-white bg-black"
+              }`}
         >
-          <AiOutlineDashboard className="fs-1 text-danger" />
+          {link.icon({ className: "fs-1 text-danger" })}
           <br />
-          Dashboard
-        </Link>
+          {link.label}
+        </ListGroupItem>
+      ))}
+
+      <ListGroupItem
+        as={Link}
+        href="/Dashboard"
+        className={`text-center border-0 bg-black
+          ${
+            pathname.includes("Dashboard")
+              ? "bg-white text-danger"
+              : "bg-black text-white"
+          }`}
+      >
+        <AiOutlineDashboard
+          className={`fs-1 ${
+            pathname.includes("Dashboard") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        Dashboard
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/Dashboard"
-          id="wd-dashboard-link"
-          className="text-white text-decoration-none"
-        >
-          <FaBook className="fs-1 text-danger" />
-          <br />
-          Courses
-        </Link>
+      <ListGroupItem
+        as={Link}
+        href="/Courses"
+        className={`text-center border-0 bg-black
+          ${
+            pathname.includes("Courses")
+              ? "bg-white text-danger"
+              : "bg-black text-white"
+          }`}
+      >
+        <FaBook
+          className={`fs-1 ${
+            pathname.includes("Courses") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        Courses
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/Labs/Lab2"
-          id="wd-labs-link"
-          className="text-white text-decoration-none"
-        >
-          <GoBeaker className="fs-1 text-danger" />
-          <br />
-          Labs
-        </Link>
+      <ListGroupItem
+        as={Link}
+        href="/Labs"
+        className={`text-center border-0 bg-black
+          ${
+            pathname.includes("Labs")
+              ? "bg-white text-danger"
+              : "bg-black text-white"
+          }`}
+      >
+        <GoBeaker
+          className={`fs-1 ${
+            pathname.includes("Labs") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        Labs
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/Groups"
-          id="wd-groups-link"
-          className="text-white text-decoration-none"
-        >
-          <SlPeople className="fs-1 text-danger" />
-          <br />
-          Groups
-        </Link>
+      <ListGroupItem
+        as={Link}
+        href="/Groups"
+        className={`text-center border-0 bg-black
+          ${
+            pathname.includes("Groups")
+              ? "bg-white text-danger"
+              : "bg-black text-white"
+          }`}
+      >
+        <SlPeople
+          className={`fs-1 ${
+            pathname.includes("Groups") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        Groups
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/Calendar"
-          id="wd-calendar-link"
-          className="text-white text-decoration-none"
-        >
-          <FaCalendarDays className="fs-1 text-danger" />
-          <br />
-          Calendar
-        </Link>
+      <ListGroupItem
+        as={Link}
+        href="/Calendar"
+        className={`text-center border-0 bg-black
+          ${
+            pathname.includes("Calendar")
+              ? "bg-white text-danger"
+              : "bg-black text-white"
+          }`}
+      >
+        <FaCalendarDays
+          className={`fs-1 ${
+            pathname.includes("Calendar") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        Calendar
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/Inbox"
-          id="wd-inbox-link"
-          className="text-white text-decoration-none"
-        >
-          <BsInboxFill className="fs-1 text-danger" />
-          <br />
-          Inbox
-        </Link>
+      <ListGroupItem
+        as={Link}
+        href="/Inbox"
+        className={`text-center border-0 bg-black
+          ${
+            pathname.includes("Inbox")
+              ? "bg-white text-danger"
+              : "bg-black text-white"
+          }`}
+      >
+        <BsInboxFill
+          className={`fs-1 ${
+            pathname.includes("Inbox") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        Inbox
       </ListGroupItem>
 
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/History"
-          id="wd-history-link"
-          className="text-white text-decoration-none"
-        >
-          <BsClockHistory className="fs-1 text-danger" />
-          <br />
-          History
-        </Link>
-      </ListGroupItem>
-
-      <ListGroupItem className="border-0 bg-black text-center">
-        <Link
-          href="/Studio"
-          id="wd-studio-link"
-          className="text-white text-decoration-none"
-        >
-          <SiAirplayvideo className="fs-1 text-danger" />
-          <br />
-          Studio
-        </Link>
+      <ListGroupItem
+        as={Link}
+        href="/History"
+        className={`text-center border-0 bg-black
+          ${
+            pathname.includes("History")
+              ? "bg-white text-danger"
+              : "bg-black text-white"
+          }`}
+      >
+        <BsClockHistory
+          className={`fs-1 ${
+            pathname.includes("History") ? "text-danger" : "text-white"
+          }`}
+        />
+        <br />
+        History
       </ListGroupItem>
     </ListGroup>
   );
