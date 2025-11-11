@@ -1,46 +1,93 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Form, Button, Row, Col } from "react-bootstrap";
-import { useParams } from "next/navigation";
-import { assignments as dbAssignments } from "../../../../Database";
-import Link from "next/link";
+import { Form, Row, Col, Button } from "react-bootstrap";
+import { useParams, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../../../store";
+import { updateAssignment, addAssignment } from "../../../Assignments/reducer";
+import { useState } from "react";
 
 export default function AssignmentEditor() {
-  const { cid, aid } = useParams() as { cid: string; aid: string };
-  const assignment = dbAssignments.find((a) => a._id === aid);
+  const params = useParams();
+  const rawCid = (params as any).cid;
+  const rawAid = (params as any).aid;
+  const cid = Array.isArray(rawCid) ? rawCid[0] : rawCid;
+  const aid = Array.isArray(rawAid) ? rawAid[0] : rawAid;
+  const dispatch = useDispatch();
+  const router = useRouter();
 
-  if (!assignment) {
+  const { assignments } = useSelector(
+    (state: RootState) => state.assignmentsReducer as any
+  );
+  const assignment = assignments.find((a: any) => a._id === aid) as
+    | any
+    | undefined;
+  const isNew = aid === "new";
+
+  const [title, setTitle] = useState(assignment?.title || "");
+  const [description, setDescription] = useState(assignment?.description || "");
+  const [points, setPoints] = useState<number>(assignment?.points || 100);
+  const [dueDate, setDueDate] = useState<string>(assignment?.dueDate || "");
+  const [availableFrom, setAvailableFrom] = useState<string>(
+    assignment?.availableFrom || ""
+  );
+
+  if (!assignment && !isNew) {
     return <div className="m-3 text-danger">Assignment not found.</div>;
   }
 
+  const onSave = () => {
+    if (isNew) {
+      dispatch(
+        addAssignment({
+          title,
+          description,
+          points,
+          dueDate,
+          availableFrom,
+          course: cid,
+          modules: [],
+          category: "Assignment",
+        })
+      );
+    } else {
+      dispatch(
+        updateAssignment({
+          ...assignment,
+          title,
+          description,
+          points,
+          dueDate,
+          availableFrom,
+        })
+      );
+    }
+    router.push(`/Courses/${encodeURIComponent(String(cid))}/Assignments`);
+  };
+
   return (
     <div className="m-3" style={{ maxWidth: "800px" }}>
-      <h5 className="mb-4">{assignment.title}</h5>
+      <h5 className="mb-4">{isNew ? "New Assignment" : assignment.title}</h5>
 
       <Form>
-        {/* Assignment Name */}
         <Form.Group className="mb-3" controlId="wd-name">
           <Form.Control
             type="text"
-            defaultValue={assignment.title}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             placeholder="Assignment Name"
           />
         </Form.Group>
 
-        {/* Description */}
         <Form.Group className="mb-3" controlId="wd-description">
-          <div
-            style={{
-              whiteSpace: "pre-wrap",
-              border: "1px solid #ced4da",
-              borderRadius: "0.375rem",
-              padding: "0.5rem",
-            }}
-          >
-            {assignment.description}
-          </div>
+          <Form.Control
+            as="textarea"
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </Form.Group>
 
-        {/* Points */}
         <Form.Group
           className="mb-3 d-flex justify-content-end"
           controlId="wd-points"
@@ -48,101 +95,14 @@ export default function AssignmentEditor() {
           <Form.Label className="ms-3">Points</Form.Label>
           <Form.Control
             type="number"
-            defaultValue={assignment.points}
+            value={points}
             style={{ width: "500px" }}
             placeholder="Points"
             className="ms-3"
+            onChange={(e) => setPoints(Number(e.target.value))}
           />
         </Form.Group>
 
-        {/* Assignment Group & Grade Display */}
-        <Form.Group className="mb-3 d-flex justify-content-end">
-          <Form.Label className="ms-3">Assignment Group</Form.Label>
-          <Form.Select
-            id="wd-group"
-            defaultValue={assignment.category.toUpperCase()}
-            style={{ width: "500px" }}
-            className="ms-3"
-          >
-            <option value="ASSIGNMENT">Assignments</option>
-            <option value="QUIZ">Quizzes</option>
-            <option value="PROJECT">Projects</option>
-            <option value="EXAM">Exams</option>
-          </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="mb-3 d-flex justify-content-end">
-          <Form.Label className="ms-3">Display Grade as</Form.Label>
-          <Form.Select
-            id="wd-display-grade-as"
-            defaultValue="PERCENTAGE"
-            style={{ width: "500px" }}
-            className="ms-3"
-          >
-            <option value="PERCENTAGE">Percentage</option>
-            <option value="SCORE">Score</option>
-          </Form.Select>
-        </Form.Group>
-
-        {/* Submission Type and Online Entry Options */}
-        <Form.Group className="mb-3 d-flex justify-content-end">
-          <Form.Label className="me-3">Submission Type</Form.Label>
-          <div
-            className="mb-3"
-            style={{
-              whiteSpace: "pre-wrap",
-              border: "1px solid #ced4da",
-              borderRadius: "0.375rem",
-              padding: "0.5rem",
-              maxWidth: "500px",
-            }}
-          >
-            <Form.Group
-              className="mb-3 d-flex justify-content-end"
-              controlId="wd-submission-type"
-            >
-              <Form.Select
-                defaultValue="Online"
-                style={{ width: "500px" }}
-                className="ms-3"
-              >
-                <option value="Online">Online</option>
-                <option value="Physical">Physical</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3 justify-content-end">
-              <Form.Label>Online Entry Options</Form.Label>
-              <Form.Check
-                type="checkbox"
-                id="wd-text-entry"
-                label="Text Entry"
-              />
-              <Form.Check
-                type="checkbox"
-                id="wd-website-url"
-                label="Website URL"
-              />
-              <Form.Check
-                type="checkbox"
-                id="wd-media-recordings"
-                label="Media Recordings"
-              />
-              <Form.Check
-                type="checkbox"
-                id="wd-student-annotation"
-                label="Student Annotation"
-              />
-              <Form.Check
-                type="checkbox"
-                id="wd-file-upload"
-                label="File Uploads"
-              />
-            </Form.Group>
-          </div>
-        </Form.Group>
-
-        {/* Assign To, Dates */}
         <Form.Group className="mb-3 d-flex justify-content-end">
           <Form.Label className="me-3">Assign</Form.Label>
           <div
@@ -168,7 +128,8 @@ export default function AssignmentEditor() {
             <Form.Control
               type="date"
               id="wd-due-date"
-              defaultValue={assignment.dueDate}
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               placeholder="Due Date"
             />
 
@@ -178,7 +139,8 @@ export default function AssignmentEditor() {
                 <Form.Control
                   type="date"
                   id="wd-available-from"
-                  defaultValue={assignment.availableFrom}
+                  value={availableFrom}
+                  onChange={(e) => setAvailableFrom(e.target.value)}
                   placeholder="Available From"
                 />
               </Col>
@@ -196,20 +158,20 @@ export default function AssignmentEditor() {
         </Form.Group>
 
         <div className="d-flex justify-content-end gap-2">
-          <Link
-            href={`/Courses/${encodeURIComponent(cid)}/Assignments`}
-            className="btn btn-secondary"
+          <Button
+            variant="secondary"
+            onClick={() =>
+              router.push(
+                `/Courses/${encodeURIComponent(String(cid))}/Assignments`
+              )
+            }
             id="wd-cancel"
           >
             Cancel
-          </Link>
-          <Link
-            href={`/Courses/${encodeURIComponent(cid)}/Assignments`}
-            className="btn btn-danger"
-            id="wd-save"
-          >
+          </Button>
+          <Button variant="danger" onClick={onSave} id="wd-save">
             Save
-          </Link>
+          </Button>
         </div>
       </Form>
     </div>

@@ -21,22 +21,32 @@
     </div> );}
     */
 
+"use client";
 import { MdDoNotDisturbAlt } from "react-icons/md";
 import { FaCheckCircle } from "react-icons/fa";
 import { BiImport } from "react-icons/bi";
-import { LiaFileImportSolid } from "react-icons/lia";
 import { Button } from "react-bootstrap";
 import { FaHome } from "react-icons/fa";
 import { GiNetworkBars } from "react-icons/gi";
 import { TfiAnnouncement } from "react-icons/tfi";
 import { FaBell } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
+import Link from "next/link";
 {
   /* Find more icons */
 }
 export default function CourseStatus() {
+  const { currentUser } = useSelector(
+    (state: RootState) =>
+      state.accountReducer as { currentUser: { _id?: string } | null }
+  );
+
   return (
     <div id="wd-course-status" style={{ width: "350px" }}>
       <h2>Course Status</h2>
+      <div className="mb-3"></div>
+
       <div className="d-flex">
         <div className="w-50 pe-1">
           <Button variant="secondary" size="lg" className="w-100 text-nowrap ">
