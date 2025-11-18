@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { modules } from "../../../Database";
 import { v4 as uuidv4 } from "uuid";
 
 // minimal typed shapes for modules and lessons
@@ -24,13 +23,16 @@ export interface ModulesState {
 }
 
 const initialState: ModulesState = {
-  modules: modules as Module[],
+  modules: [],
 };
 
 const modulesSlice = createSlice({
   name: "modules",
   initialState,
   reducers: {
+    setModules: (state, action: PayloadAction<Module[]>) => {
+      state.modules = action.payload;
+    },
     addModule: (state, action: PayloadAction<{ name: string; course?: string }>) => {
       const payloadModule = action.payload;
       const newModule: Module = {
@@ -58,5 +60,5 @@ const modulesSlice = createSlice({
   },
 });
 
-export const { addModule, deleteModule, updateModule, editModule } = modulesSlice.actions;
+export const { addModule, deleteModule, updateModule, editModule, setModules } = modulesSlice.actions;
 export default modulesSlice.reducer;

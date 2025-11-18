@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useDispatch, useSelector } from "react-redux";
-import { addNewCourse, deleteCourse, updateCourse } from "../Courses/reducer";
+import { deleteCourse, updateCourse, setCourses } from "../Courses/reducer";
+
 import {
   addEnrollment,
   removeEnrollmentByUserCourse,
 } from "../Courses/enrollments/reducer";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { RootState } from "../store";
+import * as client from "../Courses/client";
+import * as enrollmentsClient from "../Courses/enrollments/client";
 
 import {
   Button,
@@ -39,9 +42,59 @@ export default function Dashboard() {
     number: "New Number",
     startDate: "2023-09-10",
     endDate: "2023-12-15",
+    department: "D123",
+    credits: 4,
     image: "/images/reactjs.jpg",
     description: "New Description",
   });
+  const fetchCourses = useCallback(async () => {
+    try {
+      const fetchedCourses = await client.findMyCourses();
+      dispatch(setCourses(fetchedCourses));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [dispatch]);
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  const onAddNewCourse = async () => {
+    try {
+      console.log("Current user:", currentUser);
+      console.log("Course data:", course);
+      const newCourse = await client.createCourse(course);
+      console.log("Course created successfully:", newCourse);
+      dispatch(setCourses([...courses, newCourse]));
+    } catch (error: any) {
+      console.error("Error creating course:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      const errorMessage =
+        error.response?.data?.message || error.message || "Unknown error";
+      alert(`Failed to create course: ${errorMessage}`);
+    }
+  };
+
+  const onDeleteCourse = async (courseId: string) => {
+    await client.deleteCourse(courseId);
+    dispatch(setCourses(courses.filter((course) => course._id !== courseId)));
+  };
+
+  const onUpdateCourse = async () => {
+    await client.updateCourse(course);
+    dispatch(
+      setCourses(
+        courses.map((c) => {
+          if (c._id === course._id) {
+            return course;
+          } else {
+            return c;
+          }
+        })
+      )
+    );
+  };
 
   return (
     <div id="wd-dashboard">
@@ -64,29 +117,56 @@ export default function Dashboard() {
         <button
           className="btn btn-primary float-end"
           id="wd-add-new-course-click"
-          onClick={() => dispatch(addNewCourse(course))}
+          onClick={onAddNewCourse}
         >
           {" "}
           Add{" "}
         </button>
         <button
-          className="btn btn-warning float-end me-2"
-          onClick={() => dispatch(updateCourse(course))}
+          onClick={onUpdateCourse}
+          className="btn btn-secondary float-end"
           id="wd-update-course-click"
         >
-          Update{" "}
+          {" "}
+          Update
         </button>
       </h5>
       <br />
       <FormControl
         value={course.name}
         className="mb-2"
+        placeholder="Course Name"
         onChange={(e) => setCourse({ ...course, name: e.target.value })}
       />
+      <FormControl
+        value={course.number}
+        className="mb-2"
+        placeholder="Course Number"
+        onChange={(e) => setCourse({ ...course, number: e.target.value })}
+      />
+      <Row className="mb-2">
+        <Col>
+          <FormControl
+            type="date"
+            value={course.startDate}
+            onChange={(e) =>
+              setCourse({ ...course, startDate: e.target.value })
+            }
+          />
+        </Col>
+        <Col>
+          <FormControl
+            type="date"
+            value={course.endDate}
+            onChange={(e) => setCourse({ ...course, endDate: e.target.value })}
+          />
+        </Col>
+      </Row>
       <FormControl
         as="textarea"
         value={course.description}
         rows={3}
+        placeholder="Course Description"
         onChange={(e) => setCourse({ ...course, description: e.target.value })}
       />
       <hr />
@@ -97,9 +177,9 @@ export default function Dashboard() {
       <div id="wd-dashboard-courses">
         <Row xs={1} md={5} className="g-4">
           {courses
-            .filter((course) => {
+            .filter((course: any) => {
               if (showAll) return true;
-              if (!currentUser) return false;
+              if (!currentUser) return true;
               return enrollments.some(
                 (enrollment: any) =>
                   enrollment.user === (currentUser as any)._id &&
@@ -145,13 +225,11 @@ export default function Dashboard() {
                         <Button variant="primary"> Go </Button>
                         {/* action buttons - stop propagation so Link doesn't navigate */}
                         <button
+                          className="btn btn-danger"
                           onClick={(event) => {
                             event.preventDefault();
-                            event.stopPropagation();
-                            dispatch(deleteCourse(course._id));
+                            onDeleteCourse(course._id);
                           }}
-                          className="btn btn-danger float-end"
-                          id="wd-delete-course-click"
                         >
                           Delete
                         </button>
@@ -172,15 +250,28 @@ export default function Dashboard() {
                           isEnrolled ? (
                             <button
                               className="btn btn-outline-danger mt-2"
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                dispatch(
-                                  removeEnrollmentByUserCourse({
-                                    user: (currentUser as any)._id,
-                                    course: course._id,
-                                  })
-                                );
+                                try {
+                                  await enrollmentsClient.unenrollFromCourse(
+                                    course._id
+                                  );
+                                  dispatch(
+                                    removeEnrollmentByUserCourse({
+                                      user: (currentUser as any)._id,
+                                      course: course._id,
+                                    })
+                                  );
+                                } catch (error) {
+                                  console.error(
+                                    "Error unenrolling from course:",
+                                    error
+                                  );
+                                  alert(
+                                    "Failed to unenroll from course. Please try again."
+                                  );
+                                }
                               }}
                             >
                               Unenroll
@@ -188,15 +279,28 @@ export default function Dashboard() {
                           ) : (
                             <button
                               className="btn btn-success mt-2"
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                dispatch(
-                                  addEnrollment({
-                                    user: (currentUser as any)._id,
-                                    course: course._id,
-                                  })
-                                );
+                                try {
+                                  await enrollmentsClient.enrollInCourse(
+                                    course._id
+                                  );
+                                  dispatch(
+                                    addEnrollment({
+                                      user: (currentUser as any)._id,
+                                      course: course._id,
+                                    })
+                                  );
+                                } catch (error) {
+                                  console.error(
+                                    "Error enrolling in course:",
+                                    error
+                                  );
+                                  alert(
+                                    "Failed to enroll in course. Please try again."
+                                  );
+                                }
                               }}
                             >
                               Enroll

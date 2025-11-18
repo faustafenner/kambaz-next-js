@@ -4,8 +4,12 @@ import { Form, Row, Col, Button } from "react-bootstrap";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../../../store";
-import { updateAssignment, addAssignment } from "../../../Assignments/reducer";
-import { useState } from "react";
+import {
+  updateAssignment as updateAssignmentAction,
+  addAssignment,
+} from "../../../Assignments/reducer";
+import * as assignmentsClient from "../../../Assignments/client";
+import { useState, useEffect } from "react";
 
 export default function AssignmentEditor() {
   const params = useParams();
@@ -16,30 +20,60 @@ export default function AssignmentEditor() {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const { assignments } = useSelector(
-    (state: RootState) => state.assignmentsReducer as any
-  );
-  const assignment = assignments.find((a: any) => a._id === aid) as
-    | any
-    | undefined;
+  const [assignment, setAssignment] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const isNew = aid === "new";
 
-  const [title, setTitle] = useState(assignment?.title || "");
-  const [description, setDescription] = useState(assignment?.description || "");
-  const [points, setPoints] = useState<number>(assignment?.points || 100);
-  const [dueDate, setDueDate] = useState<string>(assignment?.dueDate || "");
-  const [availableFrom, setAvailableFrom] = useState<string>(
-    assignment?.availableFrom || ""
-  );
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [points, setPoints] = useState<number>(100);
+  const [dueDate, setDueDate] = useState<string>("");
+  const [availableFrom, setAvailableFrom] = useState<string>("");
+
+  // Fetch assignment if not new
+  useEffect(() => {
+    const fetchAssignment = async () => {
+      if (isNew) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const assignments = await assignmentsClient.findAssignmentsForCourse(
+          cid
+        );
+        const foundAssignment = assignments.find((a: any) => a._id === aid);
+
+        if (foundAssignment) {
+          setAssignment(foundAssignment);
+          setTitle(foundAssignment.title || "");
+          setDescription(foundAssignment.description || "");
+          setPoints(foundAssignment.points || 100);
+          setDueDate(foundAssignment.dueDate || "");
+          setAvailableFrom(foundAssignment.availableFrom || "");
+        }
+      } catch (error) {
+        console.error("Error fetching assignment:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssignment();
+  }, [cid, aid, isNew]);
+
+  if (loading) {
+    return <div className="m-3">Loading...</div>;
+  }
 
   if (!assignment && !isNew) {
     return <div className="m-3 text-danger">Assignment not found.</div>;
   }
 
-  const onSave = () => {
-    if (isNew) {
-      dispatch(
-        addAssignment({
+  const onSave = async () => {
+    try {
+      if (isNew) {
+        const newAssignment = {
           title,
           description,
           points,
@@ -48,26 +82,39 @@ export default function AssignmentEditor() {
           course: cid,
           modules: [],
           category: "Assignment",
-        })
-      );
-    } else {
-      dispatch(
-        updateAssignment({
+        };
+
+        const createdAssignment = await assignmentsClient.createAssignment(
+          cid,
+          newAssignment
+        );
+        dispatch(addAssignment(createdAssignment));
+      } else {
+        const updatedAssignment = {
           ...assignment,
           title,
           description,
           points,
           dueDate,
           availableFrom,
-        })
-      );
+        };
+
+        await assignmentsClient.updateAssignment(updatedAssignment);
+        dispatch(updateAssignmentAction(updatedAssignment));
+      }
+
+      router.push(`/Courses/${encodeURIComponent(String(cid))}/Assignments`);
+    } catch (error) {
+      console.error("Error saving assignment:", error);
+      alert("Failed to save assignment. Please try again.");
     }
-    router.push(`/Courses/${encodeURIComponent(String(cid))}/Assignments`);
   };
 
   return (
     <div className="m-3" style={{ maxWidth: "800px" }}>
-      <h5 className="mb-4">{isNew ? "New Assignment" : assignment.title}</h5>
+      <h5 className="mb-4">
+        {isNew ? "New Assignment" : assignment?.title || title}
+      </h5>
 
       <Form>
         <Form.Group className="mb-3" controlId="wd-name">

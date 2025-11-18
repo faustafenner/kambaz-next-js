@@ -11,16 +11,37 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../../store";
-import { deleteAssignment } from "../../Assignments/reducer";
+import {
+  deleteAssignment as deleteAssignmentAction,
+  updateAssignment,
+} from "../../Assignments/reducer";
+import * as assignmentsClient from "../../Assignments/client";
+import { useEffect, useState } from "react";
 
 export default function Assignments() {
   const params = useParams();
   const rawCid = (params as any).cid;
   const cid = Array.isArray(rawCid) ? rawCid[0] : rawCid;
   const dispatch = useDispatch();
-  const { assignments } = useSelector(
-    (state: RootState) => state.assignmentsReducer as any
-  );
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch assignments from server
+  const fetchAssignments = async () => {
+    try {
+      const courseAssignments =
+        await assignmentsClient.findAssignmentsForCourse(cid);
+      setAssignments(courseAssignments);
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [cid]);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "";
@@ -31,12 +52,23 @@ export default function Assignments() {
     });
   };
 
-  const onDelete = (id: string) => {
+  const onDelete = async (id: string) => {
     if (!confirm("Are you sure you want to remove the assignment?")) return;
-    dispatch(deleteAssignment(id));
+
+    try {
+      await assignmentsClient.deleteAssignment(id);
+      dispatch(deleteAssignmentAction(id));
+      // Refresh the assignments list
+      fetchAssignments();
+    } catch (error) {
+      console.error("Error deleting assignment:", error);
+      alert("Failed to delete assignment. Please try again.");
+    }
   };
 
-  const assignmentsForCourse = assignments.filter((a: any) => a.course === cid);
+  if (loading) {
+    return <div>Loading assignments...</div>;
+  }
 
   return (
     <div>
@@ -52,7 +84,7 @@ export default function Assignments() {
           </div>
 
           <ListGroup className="wd-lessons rounded-0">
-            {assignmentsForCourse.map((assignment: any) => (
+            {assignments.map((assignment: any) => (
               <ListGroupItem
                 key={assignment._id}
                 className="wd-lesson p-3 ps-3 d-flex align-items-start"
