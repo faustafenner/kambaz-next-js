@@ -73,6 +73,16 @@ export default function Dashboard() {
       const newCourse = await client.createCourse(course);
       console.log("Course created successfully:", newCourse);
       dispatch(setCourses([...courses, newCourse]));
+
+      // Add enrollment to Redux state since user is auto-enrolled on course creation
+      if (currentUser) {
+        dispatch(
+          addEnrollment({
+            user: (currentUser as any)._id,
+            course: newCourse._id,
+          })
+        );
+      }
     } catch (error: any) {
       console.error("Error creating course:", error);
       console.error("Error response:", error.response?.data);
