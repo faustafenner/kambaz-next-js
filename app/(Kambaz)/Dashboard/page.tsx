@@ -51,12 +51,17 @@ export default function Dashboard() {
   });
   const fetchCourses = useCallback(async () => {
     try {
-      const fetchedCourses = await client.findMyCourses();
+      let fetchedCourses;
+      if (showAll) {
+        fetchedCourses = await client.fetchAllCourses();
+      } else {
+        fetchedCourses = await client.findMyCourses();
+      }
       dispatch(setCourses(fetchedCourses));
     } catch (error) {
       console.error(error);
     }
-  }, [dispatch]);
+  }, [dispatch, showAll]);
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
@@ -109,7 +114,7 @@ export default function Dashboard() {
             onClick={() => setShowAll((s) => !s)}
             title="Toggle between all courses and enrolled courses"
           >
-            Enrollments
+            {showAll ? "Show Enrollments" : "Show All Courses"}
           </button>
         </div>
       </div>
@@ -178,150 +183,140 @@ export default function Dashboard() {
       <hr />
       <div id="wd-dashboard-courses">
         <Row xs={1} md={5} className="g-4">
-          {courses
-            .filter((course: any) => {
-              if (showAll) return true;
-              if (!currentUser) return true;
-              return enrollments.some(
-                (enrollment: any) =>
-                  enrollment.user === (currentUser as any)._id &&
-                  enrollment.course === course._id
-              );
-            })
-            .map((course) => {
-              const isEnrolled = currentUser
-                ? enrollments.some(
-                    (enrollment: any) =>
-                      enrollment.user === (currentUser as any)._id &&
-                      enrollment.course === course._id
-                  )
-                : false;
+          {courses.map((course) => {
+            const isEnrolled = currentUser
+              ? enrollments.some(
+                  (enrollment: any) =>
+                    enrollment.user === (currentUser as any)._id &&
+                    enrollment.course === course._id
+                )
+              : false;
 
-              return (
-                <Col
-                  key={course._id}
-                  className="wd-dashboard-course"
-                  style={{ width: "300px" }}
-                >
-                  <Card>
-                    <Link
-                      href={`/Courses/${course._id}/Home`}
-                      className="wd-dashboard-course-link text-decoration-none text-dark"
-                    >
-                      <CardImg
-                        src="/images/react.png"
-                        variant="top"
-                        width="100%"
-                        height={160}
-                      />
-                      <CardBody className="card-body">
-                        <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
-                          {course.name}{" "}
-                        </CardTitle>
-                        <CardText
-                          className="wd-dashboard-course-description overflow-hidden"
-                          style={{ height: "100px" }}
-                        >
-                          {course.description}{" "}
-                        </CardText>
-                        <Button variant="primary"> Go </Button>
-                        {/* action buttons - stop propagation so Link doesn't navigate */}
-                        <button
-                          className="btn btn-danger"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            onDeleteCourse(course._id);
-                          }}
-                        >
-                          Delete
-                        </button>
-                        <button
-                          id="wd-edit-course-click"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            setCourse(course);
-                          }}
-                          className="btn btn-warning me-2 float-end"
-                        >
-                          Edit
-                        </button>
+            return (
+              <Col
+                key={course._id}
+                className="wd-dashboard-course"
+                style={{ width: "300px" }}
+              >
+                <Card>
+                  <Link
+                    href={`/Courses/${course._id}/Home`}
+                    className="wd-dashboard-course-link text-decoration-none text-dark"
+                  >
+                    <CardImg
+                      src="/images/react.png"
+                      variant="top"
+                      width="100%"
+                      height={160}
+                    />
+                    <CardBody className="card-body">
+                      <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
+                        {course.name}{" "}
+                      </CardTitle>
+                      <CardText
+                        className="wd-dashboard-course-description overflow-hidden"
+                        style={{ height: "100px" }}
+                      >
+                        {course.description}{" "}
+                      </CardText>
+                      <Button variant="primary"> Go </Button>
+                      {/* action buttons - stop propagation so Link doesn't navigate */}
+                      <button
+                        className="btn btn-danger"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          onDeleteCourse(course._id);
+                        }}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        id="wd-edit-course-click"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          setCourse(course);
+                        }}
+                        className="btn btn-warning me-2 float-end"
+                      >
+                        Edit
+                      </button>
 
-                        {/* Enroll / Unenroll */}
-                        {currentUser ? (
-                          isEnrolled ? (
-                            <button
-                              className="btn btn-outline-danger mt-2"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                try {
-                                  await enrollmentsClient.unenrollFromCourse(
-                                    course._id
-                                  );
-                                  dispatch(
-                                    removeEnrollmentByUserCourse({
-                                      user: (currentUser as any)._id,
-                                      course: course._id,
-                                    })
-                                  );
-                                } catch (error) {
-                                  console.error(
-                                    "Error unenrolling from course:",
-                                    error
-                                  );
-                                  alert(
-                                    "Failed to unenroll from course. Please try again."
-                                  );
-                                }
-                              }}
-                            >
-                              Unenroll
-                            </button>
-                          ) : (
-                            <button
-                              className="btn btn-success mt-2"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                try {
-                                  await enrollmentsClient.enrollInCourse(
-                                    course._id
-                                  );
-                                  dispatch(
-                                    addEnrollment({
-                                      user: (currentUser as any)._id,
-                                      course: course._id,
-                                    })
-                                  );
-                                } catch (error) {
-                                  console.error(
-                                    "Error enrolling in course:",
-                                    error
-                                  );
-                                  alert(
-                                    "Failed to enroll in course. Please try again."
-                                  );
-                                }
-                              }}
-                            >
-                              Enroll
-                            </button>
-                          )
-                        ) : (
-                          <Link
-                            href="/Account/Signin"
-                            className="btn btn-outline-primary mt-2"
+                      {/* Enroll / Unenroll */}
+                      {currentUser ? (
+                        isEnrolled ? (
+                          <button
+                            className="btn btn-outline-danger mt-2"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              try {
+                                await enrollmentsClient.unenrollFromCourse(
+                                  course._id
+                                );
+                                dispatch(
+                                  removeEnrollmentByUserCourse({
+                                    user: (currentUser as any)._id,
+                                    course: course._id,
+                                  })
+                                );
+                              } catch (error) {
+                                console.error(
+                                  "Error unenrolling from course:",
+                                  error
+                                );
+                                alert(
+                                  "Failed to unenroll from course. Please try again."
+                                );
+                              }
+                            }}
                           >
-                            Sign in to enroll
-                          </Link>
-                        )}
-                      </CardBody>
-                    </Link>
-                  </Card>
-                </Col>
-              );
-            })}
+                            Unenroll
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-success mt-2"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              try {
+                                await enrollmentsClient.enrollInCourse(
+                                  course._id
+                                );
+                                dispatch(
+                                  addEnrollment({
+                                    user: (currentUser as any)._id,
+                                    course: course._id,
+                                  })
+                                );
+                              } catch (error) {
+                                console.error(
+                                  "Error enrolling in course:",
+                                  error
+                                );
+                                alert(
+                                  "Failed to enroll in course. Please try again."
+                                );
+                              }
+                            }}
+                          >
+                            Enroll
+                          </button>
+                        )
+                      ) : (
+                        <Link
+                          href="/Account/Signin"
+                          className="btn btn-outline-primary mt-2"
+                        >
+                          Sign in to enroll
+                        </Link>
+                      )}
+                    </CardBody>
+                  </Link>
+                </Card>
+              </Col>
+            );
+          })}
         </Row>
       </div>
     </div>
